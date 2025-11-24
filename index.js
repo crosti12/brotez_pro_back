@@ -5,6 +5,9 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { connectDB } from "./src/config/database.js";
 import userRoutes from "./src/controllers/userController.js";
+import productRoutes from "./src/controllers/productController.js";
+import orderRoutes from "./src/controllers/orderController.js";
+import { protect } from "./src/middleware/auth.js";
 
 dotenv.config();
 
@@ -13,11 +16,13 @@ const app = express();
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
-app.use(rateLimit({ windowMs: 60 * 1000, max: 100 }));
+app.use(rateLimit({ windowMs: 60 * 1000, max: 20 }));
 
 connectDB();
 
 app.use("/api/users", userRoutes);
+app.use("/api/products", protect, productRoutes);
+app.use("/api/orders", protect, orderRoutes);
 
 const PORT = process.env.PORT || 3000;
 
