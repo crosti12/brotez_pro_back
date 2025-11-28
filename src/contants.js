@@ -1,5 +1,41 @@
 export const ROLES = {
-  USER: "user",
+  SELLER: "seller",
+  MAGANER: "manager",
   ADMIN: "admin",
   DEVELOPER: "developer",
+};
+
+export const PRODUCT_TYPES = {
+  vegetable: "vegetable",
+  fruit: "fruit",
+  meat: "meat",
+  dairy: "dairy",
+  grain: "grain",
+};
+
+const allowedViews = {
+  userManagement: true,
+  addOrder: true,
+  history: true,
+  dashboard: true,
+  products: true,
+};
+
+export const PERMISSIONS = {
+  seller: {
+    products: true,
+    history: true,
+    allHistory: false,
+    addOrder: true,
+  },
+
+  manager: {
+    addOrder: true,
+    allHistory: true,
+    history: true,
+    products: true,
+  },
+
+  admin: allowedViews,
+  developer: allowedViews,
 };

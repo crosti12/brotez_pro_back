@@ -5,19 +5,39 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { connectDB } from "./src/config/database.js";
 import userRoutes from "./src/controllers/userController.js";
+import productRoutes from "./src/controllers/productController.js";
+import orderRoutes from "./src/controllers/orderController.js";
+import { protect } from "./src/middleware/auth.js";
 
 dotenv.config();
 
 const app = express();
+const allowedOrigins = ["http://localhost:5173", "https://brotezPRO.com"];
 
 app.use(helmet());
-app.use(cors());
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, false);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(rateLimit({ windowMs: 60 * 1000, max: 100 }));
 
 connectDB();
 
 app.use("/api/users", userRoutes);
+app.use("/api/products", protect, productRoutes);
+app.use("/api/orders", protect, orderRoutes);
 
 const PORT = process.env.PORT || 3000;
 
