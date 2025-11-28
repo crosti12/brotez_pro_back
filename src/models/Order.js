@@ -9,11 +9,14 @@ const OrderSchema = new mongoose.Schema({
       quantity: { type: String, required: true },
     },
   ],
-  isPaid: { type: Boolean, default: true },
-  buyerContact: { type: String },
+  isPaid: { type: Boolean, default: false },
+  buyerContact: { type: Object },
   isDelivered: { type: Boolean, default: false },
+  total: { type: String, required: true },
   orderId: { type: String },
   paymentId: { type: String },
+  paymentType: { type: String },
+  area: { type: String, required: true },
 });
 
 OrderSchema.pre("save", async function (next) {

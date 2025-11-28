@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
   try {
+    const isExisting = await Product.findOne({ name: req?.body?.name });
+    if (isExisting) return res.status(400).json({ message: "The item already exists" });
     const product = await Product.create(req.body);
     res.status(201).json(product);
   } catch (err) {
@@ -39,7 +41,8 @@ router.put("/id/:id", async (req, res) => {
       "username email"
     );
     if (!product) return res.status(404).json({ message: "Product not found" });
-    res.json(product);
+    const products = await Product.find().populate("author", "username email");
+    res.json(products);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -48,11 +51,21 @@ router.put("/id/:id", async (req, res) => {
 router.delete("/id/:id", async (req, res) => {
   try {
     const isAllowed = isSuper(req);
-    if (!isAllowed) return res.status(403).json({ message: "forbidden" });
+    const product = await Product.findById(req.params.id);
 
-    const product = await Product.findByIdAndDelete(req.params.id);
-    if (!product) return res.status(404).json({ message: "Product not found" });
-    res.json({ message: "Product deleted" });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (!isAllowed) {
+      if (String(product.author) !== String(req.user._id)) {
+        return res.status(403).json({ message: "forbidden" });
+      }
+    }
+    await product.deleteOne();
+
+    const products = await Product.find().populate("author", "username email");
+    res.json(products);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

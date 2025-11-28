@@ -5,7 +5,9 @@ const ProductSchema = new mongoose.Schema({
   author: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   productType: { type: String, required: true },
   name: { type: String, required: true },
-  earningMargin: { type: Number },
+  cost: { type: Number },
+  price: { type: Number, required: true },
+  unit: { type: String, required: true },
 });
 
 export default mongoose.model("Product", ProductSchema);

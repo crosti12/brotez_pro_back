@@ -4,29 +4,42 @@ import { isSuper } from "../utils/generateToken.js";
 
 const router = express.Router();
 
+function sanitizeOrderBody(body) {
+  if (body.isPaid && (body.clientPhone || body.clientName)) {
+    throw new Error("Paid orders cannot include clientPhone/clientName");
+  }
+  if (!body.isPaid && body.paymentId) {
+    throw new Error("Unpaid orders cannot include paymentId");
+  }
+
+  return body;
+}
+
 router.post("/", async (req, res) => {
   try {
-    const order = await Order.create(req.body);
+    const body = sanitizeOrderBody({ ...req.body });
 
-    const populatedOrder = await Order.findById(order._id).select("-__v").populate("author", "username email -_id");
+    await Order.create(body);
 
-    res.status(201).json(populatedOrder);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-router.get("/", async (req, res) => {
-  try {
-    const isSuper = isSuper(req);
     let orders;
-
-    if (isSuper) {
+    if (isSuper(req)) {
       orders = await Order.find().select("-__v").populate("author", "username email");
     } else {
       orders = await Order.find({ author: req.user._id }).select("-__v").populate("author", "username email");
     }
-
+    res.json(orders);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+router.get("/", async (req, res) => {
+  try {
+    let orders;
+    if (isSuper(req)) {
+      orders = await Order.find().select("-__v").populate("author", "username email");
+    } else {
+      orders = await Order.find({ author: req.user._id }).select("-__v").populate("author", "username email");
+    }
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -52,18 +65,27 @@ router.get("/id/:id", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
 router.put("/id/:id", async (req, res) => {
   try {
-    let order;
+    const body = sanitizeOrderBody({ ...req.body });
 
+    let resp;
     if (isSuper(req)) {
-      order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      resp = await Order.findByIdAndUpdate(req.params.id, body, { new: true });
     } else {
-      order = await Order.findOneAndUpdate({ _id: req.params.id, author: req.user._id }, req.body, { new: true });
+      resp = await Order.findOneAndUpdate({ _id: req.params.id, author: req.user._id }, body, { new: true });
     }
-    if (!order) return res.status(404).json({ message: "Order not found" });
-    res.json(order);
+
+    if (!resp) return res.status(404).json({ message: "Order not found" });
+
+    let allOrders;
+    if (isSuper(req)) {
+      allOrders = await Order.find().select("-__v").populate("author", "username email");
+    } else {
+      allOrders = await Order.find({ author: req.user._id }).select("-__v").populate("author", "username email");
+    }
+
+    res.json(allOrders);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

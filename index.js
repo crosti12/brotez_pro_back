@@ -12,11 +12,26 @@ import { protect } from "./src/middleware/auth.js";
 dotenv.config();
 
 const app = express();
+const allowedOrigins = ["http://localhost:5173", "https://brotezPRO.com"];
 
 app.use(helmet());
-app.use(cors());
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, false);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
+
 app.use(express.json());
-app.use(rateLimit({ windowMs: 60 * 1000, max: 20 }));
+app.use(rateLimit({ windowMs: 60 * 1000, max: 100 }));
 
 connectDB();
 

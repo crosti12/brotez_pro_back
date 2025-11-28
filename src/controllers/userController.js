@@ -2,7 +2,7 @@ import express from "express";
 import User from "../models/User.js";
 import { generateToken } from "../utils/generateToken.js";
 import { protect } from "../middleware/auth.js";
-import { ROLES } from "../contants.js";
+import { PERMISSIONS, ROLES } from "../contants.js";
 
 const router = express.Router();
 
@@ -32,9 +32,10 @@ router.post("/register", async (req, res) => {
     const user = await User.create({ username, email, password });
 
     res.json({
-      _id: user._id,
+      id: user._id,
       username: user.username,
       email: user.email,
+      role: user.role,
       token: generateToken(user._id),
     });
   } catch (err) {
@@ -45,18 +46,22 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     if (!req?.body) return res.status(400).json({ message: "Missing credentials" });
-
     const { password = "", username = "" } = req?.body;
     if (!username || !password) return res.status(400).json({ message: "Missing credentials" });
-
     const user = await User.findOne({ username });
     if (!user) return res.status(400).json({ message: "Invalid user" });
-
     const valid = await user.matchPassword(password);
     if (!valid) return res.status(400).json({ message: "Invalid password" });
 
     res.json({
       token: generateToken(user._id),
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        permissions: PERMISSIONS[user.role],
+      },
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
