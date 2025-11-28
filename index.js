@@ -12,7 +12,7 @@ import { protect } from "./src/middleware/auth.js";
 dotenv.config();
 
 const app = express();
-const allowedOrigins = ["http://localhost:5173", "https://brotezPRO.com"];
+const allowedOrigins = ["http://localhost:5173", "https://brotez-pro-front.vercel.app"];
 
 app.use(helmet());
 
