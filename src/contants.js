@@ -13,7 +13,7 @@ export const PRODUCT_TYPES = {
   grain: "grain",
 };
 
-const allowedViews = {
+const permissions = {
   userManagement: true,
   addOrder: true,
   history: true,
@@ -40,6 +40,6 @@ export const PERMISSIONS = {
     deleteProduct: true,
   },
 
-  admin: allowedViews,
-  developer: allowedViews,
+  admin: permissions,
+  developer: permissions,
 };
