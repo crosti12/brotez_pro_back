@@ -1,5 +1,6 @@
 import express from "express";
 import Order from "../models/Order.js";
+import { PERMISSIONS } from "../contants.js";
 
 const isAllowedToHistoryAll = (req) => PERMISSIONS[req.user.role]?.allHistory;
 
