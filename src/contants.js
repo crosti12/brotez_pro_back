@@ -21,6 +21,7 @@ const permissions = {
   products: true,
   manageCost: true,
   deleteProduct: true,
+  allHistory: true,
 };
 
 export const PERMISSIONS = {
