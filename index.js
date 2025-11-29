@@ -25,7 +25,7 @@ app.use(
   })
 );
 
-app.options("*", cors());
+app.options(/.*/, cors());
 app.use(express.json());
 app.use(rateLimit({ windowMs: 60 * 1000, max: 100 }));
 
