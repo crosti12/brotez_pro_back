@@ -18,18 +18,14 @@ app.use(helmet());
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, false);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
+    optionsSuccessStatus: 200,
+    maxAge: 86400,
   })
 );
 
+app.options("*", cors());
 app.use(express.json());
 app.use(rateLimit({ windowMs: 60 * 1000, max: 100 }));
 

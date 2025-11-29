@@ -5,6 +5,3 @@ export const generateToken = (id) => {
     expiresIn: "1d",
   });
 };
-export const isSuper = (req) => {
-  return req.user.role === "admin" || req.user.role === "developer";
-};

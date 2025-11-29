@@ -19,6 +19,8 @@ const allowedViews = {
   history: true,
   dashboard: true,
   products: true,
+  manageCost: true,
+  deleteProduct: true,
 };
 
 export const PERMISSIONS = {
@@ -34,6 +36,8 @@ export const PERMISSIONS = {
     allHistory: true,
     history: true,
     products: true,
+    manageCost: true,
+    deleteProduct: true,
   },
 
   admin: allowedViews,

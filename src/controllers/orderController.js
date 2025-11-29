@@ -1,6 +1,7 @@
 import express from "express";
 import Order from "../models/Order.js";
-import { isSuper } from "../utils/generateToken.js";
+
+const isAllowedToHistoryAll = (req) => PERMISSIONS[req.user.role]?.allHistory;
 
 const router = express.Router();
 
@@ -22,7 +23,7 @@ router.post("/", async (req, res) => {
     await Order.create(body);
 
     let orders;
-    if (isSuper(req)) {
+    if (isAllowedToHistoryAll(req)) {
       orders = await Order.find().select("-__v").populate("author", "username email");
     } else {
       orders = await Order.find({ author: req.user._id }).select("-__v").populate("author", "username email");
@@ -35,7 +36,7 @@ router.post("/", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     let orders;
-    if (isSuper(req)) {
+    if (isAllowedToHistoryAll(req)) {
       orders = await Order.find().select("-__v").populate("author", "username email");
     } else {
       orders = await Order.find({ author: req.user._id }).select("-__v").populate("author", "username email");
@@ -50,7 +51,7 @@ router.get("/id/:id", async (req, res) => {
   try {
     let order;
 
-    if (isSuper(req)) {
+    if (isAllowedToHistoryAll(req)) {
       order = await Order.findById(req.params.id)
         .populate("author", "username email")
         .populate("products.productId", "productType earningMargin");
@@ -70,7 +71,7 @@ router.put("/id/:id", async (req, res) => {
     const body = sanitizeOrderBody({ ...req.body });
 
     let resp;
-    if (isSuper(req)) {
+    if (isAllowedToHistoryAll(req)) {
       resp = await Order.findByIdAndUpdate(req.params.id, body, { new: true });
     } else {
       resp = await Order.findOneAndUpdate({ _id: req.params.id, author: req.user._id }, body, { new: true });
@@ -79,7 +80,7 @@ router.put("/id/:id", async (req, res) => {
     if (!resp) return res.status(404).json({ message: "Order not found" });
 
     let allOrders;
-    if (isSuper(req)) {
+    if (isAllowedToHistoryAll(req)) {
       allOrders = await Order.find().select("-__v").populate("author", "username email");
     } else {
       allOrders = await Order.find({ author: req.user._id }).select("-__v").populate("author", "username email");
@@ -94,7 +95,7 @@ router.put("/id/:id", async (req, res) => {
 router.delete("/id/:id", async (req, res) => {
   try {
     let order;
-    if (isSuper(req)) {
+    if (isAllowedToHistoryAll(req)) {
       order = await Order.findByIdAndDelete(req.params.id);
     } else {
       order = await Order.findOneAndDelete({ _id: req.params.id, author: req.user._id });

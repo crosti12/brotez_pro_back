@@ -1,7 +1,7 @@
 import express from "express";
 import Product from "../models/Product.js";
-import { isSuper } from "../utils/generateToken.js";
-
+import { PERMISSIONS } from "../contants.js";
+const isAllowedToDeleteProduct = (req) => PERMISSIONS[req.user.role]?.deleteProduct;
 const router = express.Router();
 
 router.post("/", async (req, res) => {
@@ -50,7 +50,7 @@ router.put("/id/:id", async (req, res) => {
 
 router.delete("/id/:id", async (req, res) => {
   try {
-    const isAllowed = isSuper(req);
+    const isAllowed = isAllowedToDeleteProduct(req);
     const product = await Product.findById(req.params.id);
 
     if (!product) {
