@@ -1,6 +1,6 @@
 import express from "express";
 import Product from "../models/Product.js";
-import { PERMISSIONS } from "../contants.js";
+import { PERMISSIONS } from "../constants.js";
 const isAllowedToDeleteProduct = (req) => PERMISSIONS[req.user.role]?.deleteProduct;
 const router = express.Router();
 
@@ -51,7 +51,11 @@ router.put("/id/:id", async (req, res) => {
 router.delete("/id/:id", async (req, res) => {
   try {
     const isAllowed = isAllowedToDeleteProduct(req);
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      { isDeleted: true, deletedAt: new Date() },
+      { new: true }
+    );
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
@@ -62,7 +66,6 @@ router.delete("/id/:id", async (req, res) => {
         return res.status(403).json({ message: "forbidden" });
       }
     }
-    await product.deleteOne();
 
     const products = await Product.find().populate("author", "username email");
     res.json(products);

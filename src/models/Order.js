@@ -19,6 +19,8 @@ const OrderSchema = new mongoose.Schema({
   paymentId: { type: String },
   paymentType: { type: String },
   area: { type: String, required: true },
+  isDeleted: { type: Boolean, default: false },
+  deletedAt: { type: Date, default: null },
 });
 
 OrderSchema.pre("save", async function (next) {

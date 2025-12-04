@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import { ROLES } from "../contants.js";
+import { ROLES } from "../constants.js";
 
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -9,6 +9,7 @@ const UserSchema = new mongoose.Schema({
   role: { type: String, default: ROLES.USER },
   createdAt: { type: Date, default: Date.now },
   record: { type: String },
+  language: { type: String, default: "es" },
 });
 
 UserSchema.pre("save", async function (next) {

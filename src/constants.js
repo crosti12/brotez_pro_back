@@ -22,6 +22,8 @@ const permissions = {
   manageCost: true,
   deleteProduct: true,
   allHistory: true,
+  deleteOrder: true,
+  changeUsername: true,
 };
 
 export const PERMISSIONS = {

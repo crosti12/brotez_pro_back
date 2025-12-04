@@ -2,14 +2,20 @@ import express from "express";
 import User from "../models/User.js";
 import { generateToken } from "../utils/generateToken.js";
 import { protect } from "../middleware/auth.js";
-import { PERMISSIONS, ROLES } from "../contants.js";
+import { PERMISSIONS, ROLES } from "../constants.js";
 
 const router = express.Router();
-
-router.put("/:id", protect, async (req, res) => {
+const isAllowedToEditUsername = (req) => {
+  if (PERMISSIONS[req.user.role]?.changeUsername) return true;
+  return false;
+};
+router.put("/id/:id", protect, async (req, res) => {
   try {
     const { id } = req.params;
     const updates = { ...req.body };
+    if (!isAllowedToEditUsername(req)) {
+      delete updates.username;
+    }
 
     if (updates.role && req.user.role !== ROLES.DEVELOPER) {
       return res.status(403).json({ message: "Only developers can update role" });
@@ -18,7 +24,14 @@ router.put("/:id", protect, async (req, res) => {
     const user = await User.findByIdAndUpdate(id, updates, { new: true }).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.json(user);
+    res.json({
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      language: user.language,
+      permissions: PERMISSIONS[user.role],
+    });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -36,6 +49,7 @@ router.post("/register", async (req, res) => {
       username: user.username,
       email: user.email,
       role: user.role,
+      language: user.language,
       token: generateToken(user._id),
     });
   } catch (err) {
@@ -60,6 +74,7 @@ router.post("/login", async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
+        language: user.language,
         permissions: PERMISSIONS[user.role],
       },
     });
