@@ -5,10 +5,23 @@ import { protect } from "../middleware/auth.js";
 import { PERMISSIONS, ROLES } from "../constants.js";
 
 const router = express.Router();
+
 const isAllowedToEditUsername = (req) => {
   if (PERMISSIONS[req.user.role]?.changeUsername) return true;
   return false;
 };
+
+const userFormat = (user) => {
+  return {
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    language: user.language,
+    permissions: PERMISSIONS[user.role],
+  };
+};
+
 router.put("/id/:id", protect, async (req, res) => {
   try {
     const { id } = req.params;
@@ -24,14 +37,7 @@ router.put("/id/:id", protect, async (req, res) => {
     const user = await User.findByIdAndUpdate(id, updates, { new: true }).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.json({
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      language: user.language,
-      permissions: PERMISSIONS[user.role],
-    });
+    res.json(userFormat(user));
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -45,11 +51,7 @@ router.post("/register", async (req, res) => {
     const user = await User.create({ username, email, password });
 
     res.json({
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      language: user.language,
+      ...userFormat(user),
       token: generateToken(user._id),
     });
   } catch (err) {
@@ -69,14 +71,7 @@ router.post("/login", async (req, res) => {
 
     res.json({
       token: generateToken(user._id),
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        language: user.language,
-        permissions: PERMISSIONS[user.role],
-      },
+      user: userFormat(user),
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

@@ -10,6 +10,7 @@ const UserSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   record: { type: String },
   language: { type: String, default: "es" },
+  userAllowedLogIn: { type: Boolean, default: true },
 });
 
 UserSchema.pre("save", async function (next) {

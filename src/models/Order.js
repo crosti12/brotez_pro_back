@@ -8,6 +8,7 @@ const OrderSchema = new mongoose.Schema({
       productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
       quantity: { type: String, required: true },
       pricedAt: { type: String, required: true },
+      costAt: { type: String },
     },
   ],
   isPaid: { type: Boolean, default: false },
