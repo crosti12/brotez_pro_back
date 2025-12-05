@@ -1,6 +1,7 @@
 import express from "express";
 import Product from "../models/Product.js";
-import { PERMISSIONS } from "../constants.js";
+import { PERMISSIONS, EVENT_TYPES } from "../constants.js";
+import { sendEvent } from "../notifications.js";
 const isAllowedToDeleteProduct = (req) => PERMISSIONS[req.user.role]?.deleteProduct;
 const router = express.Router();
 
@@ -10,6 +11,8 @@ router.post("/", async (req, res) => {
     if (isExisting) return res.status(400).json({ message: "The item already exists" });
     const product = await Product.create(req.body);
     res.status(201).json(product);
+
+    sendEvent(EVENT_TYPES.product, req.user._id.toString());
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -42,6 +45,8 @@ router.put("/id/:id", async (req, res) => {
     );
     if (!product) return res.status(404).json({ message: "Product not found" });
     const products = await Product.find().populate("author", "username email");
+    sendEvent(EVENT_TYPES.product, req.user._id.toString());
+
     res.json(products);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -68,6 +73,8 @@ router.delete("/id/:id", async (req, res) => {
     }
 
     const products = await Product.find().populate("author", "username email");
+    sendEvent(EVENT_TYPES.product, req.user._id.toString());
+
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: err.message });

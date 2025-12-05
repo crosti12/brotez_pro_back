@@ -46,3 +46,8 @@ export const PERMISSIONS = {
   admin: permissions,
   developer: permissions,
 };
+
+export const EVENT_TYPES = {
+  product: "products",
+  order: "orders",
+};

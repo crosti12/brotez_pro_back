@@ -8,6 +8,7 @@ import userRoutes from "./src/controllers/userController.js";
 import productRoutes from "./src/controllers/productController.js";
 import orderRoutes from "./src/controllers/orderController.js";
 import { protect } from "./src/middleware/auth.js";
+import { eventRegistry } from "./src/notifications.js";
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ connectDB();
 app.use("/api/users", userRoutes);
 app.use("/api/products", protect, productRoutes);
 app.use("/api/orders", protect, orderRoutes);
+app.get("/events", eventRegistry);
 
 const PORT = process.env.PORT || 3000;
 

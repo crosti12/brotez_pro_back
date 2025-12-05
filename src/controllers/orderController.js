@@ -1,6 +1,7 @@
 import express from "express";
 import Order from "../models/Order.js";
-import { PERMISSIONS } from "../constants.js";
+import { PERMISSIONS, EVENT_TYPES } from "../constants.js";
+import { sendEvent } from "../notifications.js";
 
 const isAllowedToHistoryAll = (req) => PERMISSIONS[req.user.role]?.allHistory;
 
@@ -29,6 +30,7 @@ router.post("/", async (req, res) => {
     } else {
       orders = await Order.find({ author: req.user._id }).select("-__v").populate("author", "username email");
     }
+    sendEvent(EVENT_TYPES.order, req.user._id.toString());
     res.json(orders);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -72,7 +74,6 @@ router.get("/id/:id", async (req, res) => {
 router.put("/id/:id", async (req, res) => {
   try {
     const body = sanitizeOrderBody({ ...req.body });
-
     let resp;
     if (isAllowedToHistoryAll(req)) {
       resp = await Order.findByIdAndUpdate(req.params.id, body, { new: true });
@@ -88,6 +89,7 @@ router.put("/id/:id", async (req, res) => {
     } else {
       allOrders = await Order.find({ author: req.user._id }).select("-__v").populate("author", "username email");
     }
+    sendEvent(EVENT_TYPES.order, req.user._id.toString());
 
     res.json(allOrders);
   } catch (err) {
@@ -107,6 +109,7 @@ router.delete("/id/:id", async (req, res) => {
         { new: true }
       );
     }
+    sendEvent(EVENT_TYPES.order, req.user._id.toString());
 
     if (!order) return res.status(404).json({ message: "Order not found" });
 
