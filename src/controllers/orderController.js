@@ -8,12 +8,12 @@ const isAllowedToHistoryAll = (req) => PERMISSIONS[req.user.role]?.allHistory;
 const router = express.Router();
 
 function sanitizeOrderBody(body) {
-  if (body.isPaid && (body.clientPhone || body.clientName)) {
-    throw new Error("Paid orders cannot include clientPhone/clientName");
-  }
-  if (!body.isPaid && body.paymentId) {
-    throw new Error("Unpaid orders cannot include paymentId");
-  }
+  // if (body.isPaid && (body.clientPhone || body.clientName)) {
+  //   throw new Error("Paid orders cannot include clientPhone/clientName");
+  // }
+  // if (!body.isPaid && body.paymentId) {
+  //   throw new Error("Unpaid orders cannot include paymentId");
+  // }
 
   return body;
 }
