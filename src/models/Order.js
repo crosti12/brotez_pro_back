@@ -9,6 +9,7 @@ const OrderSchema = new mongoose.Schema({
       quantity: { type: String, required: true },
       pricedAt: { type: String, required: true },
       costAt: { type: String },
+      currencyAt: { type: String, required: true },
     },
   ],
   isPaid: { type: Boolean, default: false },
@@ -22,6 +23,7 @@ const OrderSchema = new mongoose.Schema({
   area: { type: String, required: true },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
+  currency: { type: String, required: true },
 });
 
 OrderSchema.pre("save", async function (next) {
