@@ -11,6 +11,7 @@ const ProductSchema = new mongoose.Schema({
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
   currency: { type: String },
+  lastUpdated: { type: Date, required: true },
 });
 
 export default mongoose.model("Product", ProductSchema);

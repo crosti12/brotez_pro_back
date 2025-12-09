@@ -7,26 +7,11 @@ const isAllowedToHistoryAll = (req) => PERMISSIONS[req.user.role]?.allHistory;
 
 const router = express.Router();
 
-function sanitizeOrderBody(body) {
-  return body;
-}
-
 router.post("/", async (req, res) => {
   try {
-    const body = sanitizeOrderBody({ ...req.body });
-
-    await Order.create(body);
-
-    let orders;
-    if (isAllowedToHistoryAll(req)) {
-      orders = await Order.find({ isDeleted: false }).select("-__v").populate("author", "username email");
-    } else {
-      orders = await Order.find({ author: req.user._id, isDeleted: false })
-        .select("-__v")
-        .populate("author", "username email");
-    }
-    sendEvent(EVENT_TYPES.order, req.user._id.toString());
-    res.json(orders);
+    const body = { ...req.body, lastUpdated: new Date().toISOString() };
+    const resp = await Order.create(body);
+    res.json(resp);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -34,12 +19,25 @@ router.post("/", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    let orders;
-    if (isAllowedToHistoryAll(req)) {
-      orders = await Order.find({ isDeleted: false }).select("-__v").populate("author", "username email");
-    } else {
-      orders = await Order.find({ author: req.user._id }).select("-__v").populate("author", "username email");
+    const { lastUpdated } = req.query;
+
+    let filter = {};
+
+    if (!isAllowedToHistoryAll(req)) {
+      filter.author = req.user._id;
     }
+
+    if (lastUpdated) {
+      const date = new Date(lastUpdated);
+      if (!isNaN(date.getTime())) {
+        filter.lastUpdated = { $gt: date };
+      } else {
+        return res.status(400).json({ message: "Invalid date format" });
+      }
+    }
+
+    const orders = await Order.find(filter).select("-__v").populate("author", "username email");
+
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -68,7 +66,7 @@ router.get("/id/:id", async (req, res) => {
 
 router.put("/id/:id", async (req, res) => {
   try {
-    const body = sanitizeOrderBody({ ...req.body });
+    const body = { ...req.body, lastUpdated: new Date() };
     let resp;
     if (isAllowedToHistoryAll(req)) {
       resp = await Order.findByIdAndUpdate(req.params.id, body, { new: true });
@@ -77,18 +75,7 @@ router.put("/id/:id", async (req, res) => {
     }
 
     if (!resp) return res.status(404).json({ message: "Order not found" });
-
-    let allOrders;
-    if (isAllowedToHistoryAll(req)) {
-      allOrders = await Order.find({ isDeleted: false }).select("-__v").populate("author", "username email");
-    } else {
-      allOrders = await Order.find({ author: req.user._id, isDeleted: false })
-        .select("-__v")
-        .populate("author", "username email");
-    }
-    sendEvent(EVENT_TYPES.order, req.user._id.toString());
-
-    res.json(allOrders);
+    res.json(resp);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -97,8 +84,13 @@ router.put("/id/:id", async (req, res) => {
 router.delete("/id/:id", async (req, res) => {
   try {
     let order;
+
     if (isAllowedToHistoryAll(req)) {
-      order = await Order.findByIdAndUpdate(req.params.id, { isDeleted: true, deletedAt: new Date() }, { new: true });
+      order = await Order.findByIdAndUpdate(
+        req.params.id,
+        { isDeleted: true, deletedAt: new Date(), lastUpdated: new Date() },
+        { new: true }
+      );
     } else {
       order = await Order.findOneAndUpdate(
         { _id: req.params.id, author: req.user._id },
@@ -106,20 +98,10 @@ router.delete("/id/:id", async (req, res) => {
         { new: true }
       );
     }
-    sendEvent(EVENT_TYPES.order, req.user._id.toString());
 
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    let allOrders;
-
-    if (isAllowedToHistoryAll(req)) {
-      allOrders = await Order.find({ isDeleted: false }).select("-__v").populate("author", "username email");
-    } else {
-      allOrders = await Order.find({ author: req.user._id, isDeleted: false })
-        .select("-__v")
-        .populate("author", "username email");
-    }
-    res.json(allOrders);
+    res.json(order);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

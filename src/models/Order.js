@@ -24,6 +24,7 @@ const OrderSchema = new mongoose.Schema({
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
   currency: { type: String, required: true },
+  lastUpdated: { type: Date, required: true },
 });
 
 OrderSchema.pre("save", async function (next) {
