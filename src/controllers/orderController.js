@@ -8,13 +8,6 @@ const isAllowedToHistoryAll = (req) => PERMISSIONS[req.user.role]?.allHistory;
 const router = express.Router();
 
 function sanitizeOrderBody(body) {
-  // if (body.isPaid && (body.clientPhone || body.clientName)) {
-  //   throw new Error("Paid orders cannot include clientPhone/clientName");
-  // }
-  // if (!body.isPaid && body.paymentId) {
-  //   throw new Error("Unpaid orders cannot include paymentId");
-  // }
-
   return body;
 }
 
@@ -26,9 +19,11 @@ router.post("/", async (req, res) => {
 
     let orders;
     if (isAllowedToHistoryAll(req)) {
-      orders = await Order.find().select("-__v").populate("author", "username email");
+      orders = await Order.find({ isDeleted: false }).select("-__v").populate("author", "username email");
     } else {
-      orders = await Order.find({ author: req.user._id }).select("-__v").populate("author", "username email");
+      orders = await Order.find({ author: req.user._id, isDeleted: false })
+        .select("-__v")
+        .populate("author", "username email");
     }
     sendEvent(EVENT_TYPES.order, req.user._id.toString());
     res.json(orders);
@@ -85,9 +80,11 @@ router.put("/id/:id", async (req, res) => {
 
     let allOrders;
     if (isAllowedToHistoryAll(req)) {
-      allOrders = await Order.find().select("-__v").populate("author", "username email");
+      allOrders = await Order.find({ isDeleted: false }).select("-__v").populate("author", "username email");
     } else {
-      allOrders = await Order.find({ author: req.user._id }).select("-__v").populate("author", "username email");
+      allOrders = await Order.find({ author: req.user._id, isDeleted: false })
+        .select("-__v")
+        .populate("author", "username email");
     }
     sendEvent(EVENT_TYPES.order, req.user._id.toString());
 
