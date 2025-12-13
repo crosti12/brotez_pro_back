@@ -51,3 +51,4 @@ export const EVENT_TYPES = {
   product: "products",
   order: "orders",
 };
+export const isAllowedToHistoryAll = (req) => PERMISSIONS[req.user.role]?.allHistory;

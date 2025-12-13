@@ -7,6 +7,7 @@ import { connectDB } from "./src/config/database.js";
 import userRoutes from "./src/controllers/userController.js";
 import productRoutes from "./src/controllers/productController.js";
 import orderRoutes from "./src/controllers/orderController.js";
+import clientRoutes from "./src/controllers/clientController.js";
 import { protect } from "./src/middleware/auth.js";
 import { eventRegistry } from "./src/notifications.js";
 
@@ -36,6 +37,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/products", protect, productRoutes);
 app.use("/api/orders", protect, orderRoutes);
 app.get("/events", eventRegistry);
+app.use("/api/clients", protect, clientRoutes);
 
 const PORT = process.env.PORT || 3000;
 
