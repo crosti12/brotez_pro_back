@@ -29,8 +29,13 @@ router.put("/id/:id", async (req, res) => {
   try {
     const body = { ...req.body, lastUpdated: new Date() };
 
-    if (body.clientName && body.clientPhone && body.cliendId) {
-      const client = await createClient({ name: body.clientName, phone: body.clientPhone });
+    if (body.clientName && body.clientPhone && body.ci) {
+      const client = await createClient({
+        ci: body.ci,
+        name: body.clientName,
+        phone: body.clientPhone,
+        author: req.user._id,
+      });
       body.clientId = client._id;
     }
 
